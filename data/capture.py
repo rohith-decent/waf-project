@@ -1,35 +1,63 @@
+"""
+capture.py — captures only DVWA traffic via dvwa.local hostname.
+
+Run with:
+    # Legit traffic:
+    mitmdump -s data/capture.py --listen-host 127.0.0.1 --listen-port 8080 `
+             --set outfile=data/traffic_legit.jsonl --set label=0
+
+    # Attack traffic:
+    mitmdump -s data/capture.py --listen-host 127.0.0.1 --listen-port 8080 `
+             --set outfile=data/traffic_attack.jsonl --set label=1
+"""
+
 import json
 import datetime
+import mitmproxy.http
+from mitmproxy import ctx
+
+# dvwa.local instead of localhost — Firefox proxies this normally
+ALLOWED_HOSTS = {"dvwa.local", "dvwa.local:80"}
 
 
 class RequestCapture:
-    """
-    mitmproxy calls request() for every HTTP request it intercepts.
-    We pull out the fields we care about and print them.
-    """
 
-    def request(self, flow):
+    def load(self, loader):
+        loader.add_option("outfile", str, "data/traffic_legit.jsonl", "Output JSONL file")
+        loader.add_option("label",   int, 0,                          "0=legit, 1=attack")
+
+    def request(self, flow: mitmproxy.http.HTTPFlow):
+        host = flow.request.pretty_host
+
+        # Drop everything that isn't DVWA
+        if host not in ALLOWED_HOSTS:
+            return
+
         req = flow.request
 
-        # Build a structured record — same shape we'll write to JSONL in Week 2
         record = {
             "timestamp": datetime.datetime.utcnow().isoformat(),
-            "method":    req.method,           # GET, POST, etc.
-            "host":      req.pretty_host,      # e.g. localhost
-            "path":      req.path,             # e.g. /dvwa/login.php
-            "query":     dict(req.query),      # dict of query params
-            "body":      req.get_text() or "", # POST body text
+            "label":     ctx.options.label,
+            "method":    req.method,
+            "host":      host,
+            "path":      req.path,
+            "query":     dict(req.query),
+            "body":      req.get_text() or " ",
             "headers": {
-                # Grab the headers that matter most for WAF analysis
-                k: v for k, v in req.headers.items()
-                if k.lower() in ("content-type", "user-agent", "cookie", "referer")
+                k.lower(): v
+                for k, v in req.headers.items()
+                if k.lower() in (
+                    "content-type", "user-agent",
+                    "cookie",        "referer",
+                    "x-forwarded-for"
+                )
             },
         }
 
-        # Pretty-print to console so you can see it working
-        print(json.dumps(record, indent=2))
-        print("-" * 60)
+        with open(ctx.options.outfile, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+
+        print(f"[label={record['label']}] {record['method']} {host}{record['path']}")
 
 
-# mitmproxy discovers addons via this variable name — don't rename it
 addons = [RequestCapture()]
