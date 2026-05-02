@@ -11,6 +11,7 @@ ZERO_WIDTH_PATTERN = re.compile(
     r'\u2028\u2029\u202a-\u202f'
     r'\u2060-\u206f\ufeff]'
 )
+HEX_LITERAL_PATTERN = re.compile(r'\\x([0-9a-fA-F]{2})')
 def normalize(raw: str) -> str:
     """
     Normalize a raw HTTP request string before tokenization.
@@ -41,6 +42,10 @@ def normalize(raw: str) -> str:
     # e.g. UNI​ON (U+200B after I) defeats naive regex but our model
     # has never seen UNION tokenized with an invisible char inside it
     text = ZERO_WIDTH_PATTERN.sub("", text)
+    # Step 5 — SQL hex literal decode
+    # Decodes \x20 → space, \x27 → ', \x41 → A etc.
+    # Attackers use these in CONCAT and string functions to bypass keyword matching
+    text = HEX_LITERAL_PATTERN.sub(lambda m: chr(int(m.group(1), 16)), text)
     return text
 def normalize_request(method: str, path: str,
                        body: str = "", query: str = "",
