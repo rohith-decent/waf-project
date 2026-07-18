@@ -1,0 +1,45 @@
+id,source,raw_payload,normalized,score,predicted,true_label,false_negative,latency_ms
+0,sqlmap,id=1' OR NOT 4765=4765-- Iidz&Submit=Submit,[METHOD] GET [PATH] / [QUERY]  [BODY] id=1' OR NOT 4765=4765-- Iidz&Submit=Submit [UA]  [COOKIE],0.999998,1,1,False,27.37
+1,sqlmap,"id=1' AND (SELECT 1521 FROM(SELECT COUNT(*),CONCAT(0x7171766271,(SELECT (ELT(1521=1521,1))),0x7162707171,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a)-- FUnz&Submit=Submit","[METHOD] GET [PATH] / [QUERY]  [BODY] id=1' AND (SELECT 1521 FROM(SELECT COUNT(*),CONCAT(0x7171766271,(SELECT (ELT(1521=1521,1))),0x7162707171,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a)-- FUnz&Submit=Submit [UA]  [COOKIE]",0.999392,1,1,False,46.53
+2,sqlmap,id=1' AND (SELECT 2794 FROM (SELECT(SLEEP(5)))OuKR)-- QVmU&Submit=Submit,[METHOD] GET [PATH] / [QUERY]  [BODY] id=1' AND (SELECT 2794 FROM (SELECT(SLEEP(5)))OuKR)-- QVmU&Submit=Submit [UA]  [COOKIE],0.999916,1,1,False,22.31
+3,sqlmap,"id=1' UNION ALL SELECT CONCAT(0x7171766271,0x4561744a687670454a735066656e78457858505a52544155714e586e58416741666e536141594f67,0x7162707171),NULL-- -&Submit=Submit","[METHOD] GET [PATH] / [QUERY]  [BODY] id=1' UNION ALL SELECT CONCAT(0x7171766271,0x4561744a687670454a735066656e78457858505a52544155714e586e58416741666e536141594f67,0x7162707171),NULL-- -&Submit=Submit [UA]  [COOKIE]",0.999997,1,1,False,46.34
+4,ollama,' OR 'y'='y',[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR 'y'='y' [UA]  [COOKIE],0.999439,1,1,False,17.85
+5,ollama,"UNION SELECT NULL,username,password FROM users UNION SELECT 0","[METHOD] GET [PATH] / [QUERY]  [BODY] UNION SELECT NULL,username,password FROM users UNION SELECT 0 [UA]  [COOKIE]",0.555091,1,1,False,22.35
+6,ollama,' OR '2'='4',[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR '2'='4' [UA]  [COOKIE],0.99965,1,1,False,18.0
+7,ollama,admin' OR 1=1,[METHOD] GET [PATH] / [QUERY]  [BODY] admin' OR 1=1 [UA]  [COOKIE],0.999776,1,1,False,25.08
+8,ollama,1; DROP TABLE users; --,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; DROP TABLE users; -- [UA]  [COOKIE],0.669387,1,1,False,16.71
+9,ollama,"admin UNION SELECT null,username,password FROM users #","[METHOD] GET [PATH] / [QUERY]  [BODY] admin UNION SELECT null,username,password FROM users # [UA]  [COOKIE]",0.917389,1,1,False,16.38
+10,ollama,1; INSERT INTO temp VALUES (NULL);,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; INSERT INTO temp VALUES (NULL); [UA]  [COOKIE],0.007411,0,1,True,23.85
+11,ollama,' AND SLEEP(3),[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND SLEEP(3) [UA]  [COOKIE],0.998207,1,1,False,15.17
+12,ollama,OR 'x'='^',[METHOD] GET [PATH] / [QUERY]  [BODY] OR 'x'='^' [UA]  [COOKIE],0.99808,1,1,False,20.9
+13,ollama,'; EXEC xp_cmdshell('echo off')--,[METHOD] GET [PATH] / [QUERY]  [BODY] '; EXEC xp_cmdshell('echo off')-- [UA]  [COOKIE],0.019114,0,1,True,19.15
+14,ollama,'; DROP TABLE users; -- #,[METHOD] GET [PATH] / [QUERY]  [BODY] '; DROP TABLE users; -- # [UA]  [COOKIE],0.921936,1,1,False,24.14
+15,ollama,"' OR 'x'=UNION SELECT null,username,password FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR 'x'=UNION SELECT null,username,password FROM users-- [UA]  [COOKIE]",0.604948,1,1,False,21.77
+16,ollama,1; SELECT DATABASE()--,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; SELECT DATABASE()-- [UA]  [COOKIE],0.994526,1,1,False,21.27
+17,ollama,"' UNION SELECT SUBSTRING(username,2,1) FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' UNION SELECT SUBSTRING(username,2,1) FROM users-- [UA]  [COOKIE]",0.955463,1,1,False,18.11
+18,ollama,' AND SLEEP(5); UPDATE users SET password='a'--,[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND SLEEP(5); UPDATE users SET password='a'-- [UA]  [COOKIE],0.390919,0,1,True,15.62
+19,ollama,admin' OR '4'='4,[METHOD] GET [PATH] / [QUERY]  [BODY] admin' OR '4'='4 [UA]  [COOKIE],0.999883,1,1,False,15.26
+20,ollama,"' UNION SELECT now(),username,password FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' UNION SELECT now(),username,password FROM users-- [UA]  [COOKIE]",0.944497,1,1,False,18.69
+21,ollama,'); CREATE TABLE temp(id INT PRIMARY KEY)--,[METHOD] GET [PATH] / [QUERY]  [BODY] '); CREATE TABLE temp(id INT PRIMARY KEY)-- [UA]  [COOKIE],0.000642,0,1,True,21.22
+22,ollama,' AND (SELECT COUNT(*) FROM users WHERE username='admin')='b'--,[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND (SELECT COUNT(*) FROM users WHERE username='admin')='b'-- [UA]  [COOKIE],0.987248,1,1,False,20.79
+23,ollama,"' UNION SELECT substring('hello',2) FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' UNION SELECT substring('hello',2) FROM users-- [UA]  [COOKIE]",0.016666,0,1,True,18.29
+24,ollama,"' AND (SELECT SUBSTRING(username,1,1) FROM users WHERE username='a')='a'--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND (SELECT SUBSTRING(username,1,1) FROM users WHERE username='a')='a'-- [UA]  [COOKIE]",0.986274,1,1,False,26.25
+25,ollama,"UNION SELECT 1,0 FROM dual--","[METHOD] GET [PATH] / [QUERY]  [BODY] UNION SELECT 1,0 FROM dual-- [UA]  [COOKIE]",0.903296,1,1,False,21.52
+26,ollama,admin'// --,[METHOD] GET [PATH] / [QUERY]  [BODY] admin'// -- [UA]  [COOKIE],0.999841,1,1,False,19.85
+27,ollama,1; UPDATE users SET password = 'password' WHERE username = 'admin';--,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; UPDATE users SET password = 'password' WHERE username = 'admin';-- [UA]  [COOKIE],0.996874,1,1,False,19.24
+28,ollama,"' UNION SELECT null,CONCAT(username,'\x20') FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' UNION SELECT null,CONCAT(username,' ') FROM users-- [UA]  [COOKIE]",0.710008,1,1,False,18.62
+29,ollama,"' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='b'--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='b'-- [UA]  [COOKIE]",0.968334,1,1,False,21.98
+30,ollama,'; DELETE FROM comments WHERE id=3--,[METHOD] GET [PATH] / [QUERY]  [BODY] '; DELETE FROM comments WHERE id=3-- [UA]  [COOKIE],0.075927,0,1,True,17.31
+31,ollama,' OR BINARY 1=1// --,[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR BINARY 1=1// -- [UA]  [COOKIE],0.99929,1,1,False,16.46
+32,ollama,"UNION SELECT NULL,username FROM users WHERE username='test user'--","[METHOD] GET [PATH] / [QUERY]  [BODY] UNION SELECT NULL,username FROM users WHERE username='test user'-- [UA]  [COOKIE]",0.99973,1,1,False,19.0
+33,ollama,1; GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'%';--,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'%';-- [UA]  [COOKIE],0.452734,0,1,True,24.26
+34,ollama,' AND (SELECT COUNT(*) FROM information_schema.tables)>'c'--,[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND (SELECT COUNT(*) FROM information_schema.tables)>'c'-- [UA]  [COOKIE],0.57689,1,1,False,30.53
+35,ollama,' OR 'x'='y',[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR 'x'='y' [UA]  [COOKIE],0.998191,1,1,False,21.45
+36,ollama,1; DROP TABLE products--,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; DROP TABLE products-- [UA]  [COOKIE],0.990418,1,1,False,17.25
+37,ollama,"' UNION SELECT null,username FROM users--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' UNION SELECT null,username FROM users-- [UA]  [COOKIE]",0.900198,1,1,False,15.48
+38,ollama,"admin',NULL,''","[METHOD] GET [PATH] / [QUERY]  [BODY] admin',NULL,'' [UA]  [COOKIE]",0.966254,1,1,False,15.09
+39,ollama,' AND SLEEP(3)--,[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND SLEEP(3)-- [UA]  [COOKIE],0.998258,1,1,False,14.19
+40,ollama,1; CREATE USER 'guest'@'%';--,[METHOD] GET [PATH] / [QUERY]  [BODY] 1; CREATE USER 'guest'@'%';-- [UA]  [COOKIE],0.907097,1,1,False,15.31
+41,ollama,' OR 1=0--,[METHOD] GET [PATH] / [QUERY]  [BODY] ' OR 1=0-- [UA]  [COOKIE],0.986793,1,1,False,13.88
+42,ollama,2*(' OR 'x'='x'),[METHOD] GET [PATH] / [QUERY]  [BODY] 2*(' OR 'x'='x') [UA]  [COOKIE],0.98159,1,1,False,21.2
+43,ollama,"' AND (SELECT SUBSTRING(username,1,4) FROM users WHERE username='admin')='d'--","[METHOD] GET [PATH] / [QUERY]  [BODY] ' AND (SELECT SUBSTRING(username,1,4) FROM users WHERE username='admin')='d'-- [UA]  [COOKIE]",0.998291,1,1,False,23.66

