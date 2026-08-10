@@ -15,11 +15,12 @@ HEX_LITERAL_PATTERN = re.compile(r'\\x([0-9a-fA-F]{2})')
 def normalize(raw: str) -> str:
     """
     Normalize a raw HTTP request string before tokenization.
-    Four transformations in this exact order:
+    Five transformations in this exact order:
       1. NFKC unicode normalization  — collapses lookalike chars to ASCII
       2. Double URL decode           — %2527 -> %27 -> '
       3. HTML entity decode          — &#x27; -> '
       4. Zero-width char strip       — removes invisible separators
+      5. hex literal decode
     Order matters: unicode normalization must run first because some
     unicode chars have percent-encoded equivalents that only become
     visible after NFKC collapses them.

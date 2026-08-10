@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Scoring Console — WAF Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:       #ECE6D6;
+    --paper-panel: #F5F1E6;
+    --paper-deep:  #DFD6BE;
+    --ink:         #23241F;
+    --ink-soft:    #57534A;
+    --ink-faint:   #8A8371;
+    --line:        #C7BFA0;
+    --line-soft:   #D8D0B8;
+    --alert:       #A6311F;
+    --alert-soft:  rgba(166,49,31,0.1);
+    --safe:        #3E6350;
+    --safe-soft:   rgba(62,99,80,0.1);
+    --accent:      #B9812E;
+    --accent-soft: rgba(185,129,46,0.14);
+
+    --display: 'Space Grotesk', sans-serif;
+    --body:    'IBM Plex Sans', sans-serif;
+    --mono:    'IBM Plex Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(185,129,46,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(166,49,31,0.04) 0%, transparent 45%);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  a { color: inherit; }
+
+  ::selection { background: var(--accent-soft); }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ───────────────────── Header ───────────────────── */
+
+  header {
+    padding: 44px 56px 32px;
+    border-bottom: 1.5px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    max-width: 480px;
+  }
+
+  .conn-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .conn-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-panel);
+    border: 1.5px solid var(--line);
+    padding: 8px 10px 8px 14px;
+  }
+
+  .conn-row input {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 190px;
+  }
+
+  .conn-row input::placeholder { color: var(--ink-faint); }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .status-dot.up { background: var(--safe); }
+  .status-dot.down { background: var(--alert); }
+
+  .btn-check {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-check:hover { background: var(--accent); }
+
+  .conn-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+  }
+
+  /* ───────────────────── Tabs ───────────────────── */
+
+  .tabs {
+    display: flex;
+    padding: 0 56px;
+    margin-top: 28px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
+    border: 1.5px solid var(--line);
+    border-bottom: none;
+    padding: 12px 26px 10px;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 100%, 0 100%);
+  }
+
+  .tab-btn.active {
+    background: var(--paper-panel);
+    color: var(--ink);
+    font-weight: 600;
+    border-color: var(--ink);
+    top: 0;
+  }
+
+  /* ───────────────────── Main panel ───────────────────── */
+
+  .panel {
+    margin: 0 56px 80px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper-panel);
+    padding: 40px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+  }
+
+  .field-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .row-fields {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  select, input[type=text], textarea {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  select:focus, input[type=text]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.6;
+  }
+
+  #batch-input { min-height: 200px; }
+
+  .adv-toggle {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0;
+    margin: 4px 0 18px;
+  }
+
+  .adv-fields {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .adv-fields.open { display: grid; }
+
+  .btn-scan {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 14px 30px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-scan:hover { background: var(--accent); }
+  .btn-scan:active { transform: translateY(1px); }
+  .btn-scan:disabled { background: var(--ink-faint); cursor: not-allowed; }
+
+  /* ───────────────────── Result / gauge ───────────────────── */
+
+  .result-panel {
+    border-left: 1.5px dashed var(--line);
+    padding-left: 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .result-empty {
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 260px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  .result-body { display: none; }
+  .result-body.show { display: block; }
+
+  .gauge-wrap { margin-bottom: 28px; }
+
+  .gauge-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .gauge-score {
+    font-family: var(--display);
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  .gauge-score.malicious { color: var(--alert); }
+  .gauge-score.benign { color: var(--safe); }
+
+  .gauge-track {
+    position: relative;
+    height: 34px;
+    background: linear-gradient(to right,
+      var(--safe-soft) 0%, var(--safe-soft) 50%,
+      var(--alert-soft) 50%, var(--alert-soft) 100%);
+    border: 1.5px solid var(--ink);
+  }
+
+  .gauge-ticks {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+  .gauge-tick {
+    flex: 1;
+    border-right: 1px solid var(--line);
+  }
+  .gauge-tick:last-child { border-right: none; }
+
+  .gauge-threshold {
+    position: absolute;
+    top: -6px; bottom: -6px;
+    left: 50%;
+    width: 2px;
+    background: var(--ink);
+  }
+  .gauge-threshold::after {
+    content: 'THRESHOLD 0.5';
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.5px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  .gauge-needle {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    left: 0%;
+    transition: left 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 0 1px var(--paper-panel);
+  }
+  .gauge-needle::before {
+    content: '';
+    position: absolute;
+    top: -7px; left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gauge-needle { transition: none; }
+  }
+
+  .stamp-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 22px 0 26px;
+  }
+
+  .stamp {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 3px;
+    padding: 10px 24px;
+    border: 3px solid;
+    border-radius: 4px;
+    transform: rotate(-4deg);
+    text-transform: uppercase;
+    position: relative;
+  }
+  .stamp::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  .stamp.malicious { color: var(--alert); border-color: var(--alert); }
+  .stamp.benign { color: var(--safe); border-color: var(--safe); }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+
+  .meta-cell {
+    background: var(--paper);
+    padding: 12px 14px;
+  }
+
+  .meta-cell-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+
+  .meta-cell-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .normalized-preview {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    line-height: 1.7;
+    max-height: 120px;
+    overflow-y: auto;
+    word-break: break-word;
+  }
+
+  /* ───────────────────── Batch table ───────────────────── */
+
+  .batch-summary {
+    display: flex;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin: 28px 0;
+  }
+  .batch-summary.hidden { display: none; }
+
+  .sum-cell {
+    flex: 1;
+    background: var(--paper);
+    padding: 16px 20px;
+  }
+
+  .sum-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+
+  .sum-value {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .sum-value.malicious { color: var(--alert); }
+  .sum-value.benign { color: var(--safe); }
+
+  table.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .results-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 9.5px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+
+  .results-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+
+  .results-table tr:hover td { background: var(--accent-soft); }
+
+  .payload-cell {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-soft);
+  }
+
+  .mini-gauge {
+    width: 70px;
+    height: 8px;
+    background: var(--paper-deep);
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .mini-gauge-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    background: var(--accent);
+  }
+  .mini-gauge-fill.malicious { background: var(--alert); }
+  .mini-gauge-fill.benign { background: var(--safe); }
+
+  .mini-verdict {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border: 1.5px solid;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .mini-verdict.malicious { color: var(--alert); border-color: var(--alert); }
+  .mini-verdict.benign { color: var(--safe); border-color: var(--safe); }
+
+  .empty-batch {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+
+  /* ───────────────────── Error banner ───────────────────── */
+
+  .error-banner {
+    display: none;
+    background: var(--alert-soft);
+    border: 1.5px solid var(--alert);
+    color: var(--alert);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .error-banner.show { display: block; }
+
+  /* ───────────────────── Responsive ───────────────────── */
+
+  @media (max-width: 860px) {
+    
+    .grid-2 { grid-template-columns: 1fr; }
+    .result-panel { border-left: none; border-top: 1.5px dashed var(--line); padding-left: 0; padding-top: 28px; margin-top: 28px; }
+    header { flex-direction: column; align-items: flex-start; }
+    .conn-block { align-items: flex-start; }
+    .panel { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">WAF Project — Live Instrument</div>
+    <h1>Request Scoring Console</h1>
+    <p class="subtitle">Scores an HTTP request against the ONNX-served model. Reads live off your running <code>/score</code> and <code>/batch_score</code> endpoints.</p>
+  </div>
+  <div class="conn-block">
+    <div class="conn-row">
+      <span class="status-dot" id="status-dot"></span>
+      <input type="text" id="api-base" value="http://localhost:8000" placeholder="API base URL">
+      <button class="btn-check" id="btn-check">Check</button>
+    </div>
+    <span class="conn-label" id="conn-label">not checked yet</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-view="single">Single Request</button>
+  <button class="tab-btn" data-view="batch">Batch Scan</button>
+</div>
+
+<div class="panel">
+
+  <!-- ── SINGLE VIEW ── -->
+  <div class="view active" id="view-single">
+    <div class="error-banner" id="single-error"></div>
+    <div class="grid-2">
+      <div>
+        <div class="row-fields">
+          <div>
+            <span class="field-label">Method</span>
+            <select id="s-method">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+          </div>
+          <div>
+            <span class="field-label">Path</span>
+            <input type="text" id="s-path" value="/login.php" placeholder="/login.php">
+          </div>
+        </div>
+
+        <span class="field-label">Body</span>
+        <textarea id="s-body" placeholder="username=admin' OR 1=1--">username=admin' OR 1=1--</textarea>
+
+        <button class="adv-toggle" id="adv-toggle">+ query / user-agent / cookie</button>
+
+        <div class="adv-fields" id="adv-fields">
+          <div>
+            <span class="field-label">Query</span>
+            <input type="text" id="s-query" placeholder="id=1&sort=asc">
+          </div>
+          <div>
+            <span class="field-label">User-Agent</span>
+            <input type="text" id="s-ua" placeholder="Mozilla/5.0...">
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <span class="field-label">Cookie</span>
+            <input type="text" id="s-cookie" placeholder="session=...">
+          </div>
+        </div>
+
+        <button class="btn-scan" id="btn-scan-single">Scan Request</button>
+      </div>
+
+      <div class="result-panel">
+        <div class="result-empty" id="single-empty">
+          Waiting on a request.<br>Fill in the fields and scan —<br>the gauge reads live off the model.
+        </div>
+        <div class="result-body" id="single-result">
+          <div class="gauge-wrap">
+            <div class="gauge-label-row">
+              <span class="field-label" style="margin-bottom:0;">Score</span>
+              <span class="gauge-score" id="gauge-score">0.000</span>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-ticks">
+                <div class="gauge-tick"></div><div class="gauge-tick"></div><div class="gauge-tick"></div>
+                <div class="gauge-tick"></div><div class="gauge-tick"></div><div class="gauge-tick"></div>
+                <div class="gauge-tick"></div><div class="gauge-tick"></div><div class="gauge-tick"></div>
+                <div class="gauge-tick"></div>
+              </div>
+              <div class="gauge-threshold"></div>
+              <div class="gauge-needle" id="gauge-needle"></div>
+            </div>
+          </div>
+
+          <div class="stamp-wrap">
+            <div class="stamp" id="verdict-stamp">BENIGN</div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-cell">
+              <div class="meta-cell-label">Label</div>
+              <div class="meta-cell-value" id="meta-label">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">Latency</div>
+              <div class="meta-cell-value" id="meta-latency">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">No. of scanned windows</div>
+              <div class="meta-cell-value" id="meta-windows">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">Threshold</div>
+              <div class="meta-cell-value" id="meta-threshold">—</div>
+            </div>
+          </div>
+
+          <span class="field-label">Normalized input</span>
+          <div class="normalized-preview" id="meta-normalized">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BATCH VIEW ── -->
+  <div class="view" id="view-batch">
+    <div class="error-banner" id="batch-error"></div>
+    <span class="field-label">Payloads — one per line</span>
+    <textarea id="batch-input" placeholder="admin' OR 1=1--&#10;SELECT * FROM users&#10;'; DROP TABLE users;--">admin' OR 1=1--
+SELECT * FROM users
+'; DROP TABLE users;--
+1; GRANT ALL PRIVILEGES ON *.* TO 'x'@'%';--</textarea>
+    <div style="margin-top:18px;">
+      <button class="btn-scan" id="btn-scan-batch">Scan Batch</button>
+    </div>
+
+    <div class="batch-summary hidden" id="batch-summary">
+      <div class="sum-cell">
+        <div class="sum-label">Total</div>
+        <div class="sum-value" id="sum-total">0</div>
+      </div>
+      <div class="sum-cell">
+        <div class="sum-label">Malicious</div>
+        <div class="sum-value malicious" id="sum-malicious">0</div>
+      </div>
+      <div class="sum-cell">
+        <div class="sum-label">Benign</div>
+        <div class="sum-value benign" id="sum-benign">0</div>
+      </div>
+    </div>
+
+    <div id="batch-results">
+      <div class="empty-batch">No batch scanned yet.</div>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+  // ── Tab switching ──
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    });
+  });
+
+  // ── Advanced fields toggle ──
+  const advToggle = document.getElementById('adv-toggle');
+  const advFields = document.getElementById('adv-fields');
+  advToggle.addEventListener('click', () => {
+    advFields.classList.toggle('open');
+    advToggle.textContent = advFields.classList.contains('open')
+      ? '− hide query / user-agent / cookie'
+      : '+ query / user-agent / cookie';
+  });
+
+  // ── Connection check ──
+  const apiBaseInput = document.getElementById('api-base');
+  const statusDot = document.getElementById('status-dot');
+  const connLabel = document.getElementById('conn-label');
+
+  function apiBase() {
+    return apiBaseInput.value.trim().replace(/\/$/, '');
+  }
+
+  async function checkConnection() {
+    connLabel.textContent = 'checking...';
+    try {
+      const res = await fetch(apiBase() + '/health');
+      const data = await res.json();
+      if (data.status === 'ok') {
+        statusDot.className = 'status-dot up';
+        connLabel.textContent = 'connected · onnx: ' + data.onnx;
+      } else {
+        statusDot.className = 'status-dot down';
+        connLabel.textContent = 'unexpected response';
+      }
+    } catch (e) {
+      statusDot.className = 'status-dot down';
+      connLabel.textContent = 'unreachable';
+    }
+  }
+
+  document.getElementById('btn-check').addEventListener('click', checkConnection);
+  window.addEventListener('load', checkConnection);
+
+  // ── Single scan ──
+  const btnScanSingle = document.getElementById('btn-scan-single');
+  const singleEmpty = document.getElementById('single-empty');
+  const singleResult = document.getElementById('single-result');
+  const singleError = document.getElementById('single-error');
+
+  btnScanSingle.addEventListener('click', async () => {
+    singleError.classList.remove('show');
+    btnScanSingle.disabled = true;
+    btnScanSingle.textContent = 'Scanning...';
+
+    const payload = {
+      method: document.getElementById('s-method').value,
+      path: document.getElementById('s-path').value || '/',
+      body: document.getElementById('s-body').value,
+      query: document.getElementById('s-query').value,
+      user_agent: document.getElementById('s-ua').value,
+      cookie: document.getElementById('s-cookie').value,
+    };
+
+    try {
+      const res = await fetch(apiBase() + '/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      renderSingleResult(data);
+    } catch (e) {
+      singleError.textContent = 'Scan failed — ' + e.message + '. Check the API base URL and that the server is running.';
+      singleError.classList.add('show');
+    } finally {
+      btnScanSingle.disabled = false;
+      btnScanSingle.textContent = 'Scan Request';
+    }
+  });
+
+  function renderSingleResult(data) {
+    singleEmpty.style.display = 'none';
+    singleResult.classList.add('show');
+
+    const isMalicious = data.label === 'attack' || data.label === 'malicious';
+    const scoreEl = document.getElementById('gauge-score');
+    scoreEl.textContent = data.score.toFixed(3);
+    scoreEl.className = 'gauge-score ' + (isMalicious ? 'malicious' : 'benign');
+
+    // Needle sweep — reset then animate to force the transition
+    const needle = document.getElementById('gauge-needle');
+    needle.style.transition = 'none';
+    needle.style.left = '0%';
+    void needle.offsetWidth; // force reflow
+    needle.style.transition = '';
+    requestAnimationFrame(() => {
+      needle.style.left = (Math.min(Math.max(data.score, 0), 1) * 100) + '%';
+    });
+
+    const stamp = document.getElementById('verdict-stamp');
+    stamp.textContent = isMalicious ? 'Malicious' : 'Benign';
+    stamp.className = 'stamp ' + (isMalicious ? 'malicious' : 'benign');
+
+    document.getElementById('meta-label').textContent = data.label;
+    document.getElementById('meta-latency').textContent = data.latency_ms.toFixed(2) + ' ms';
+    document.getElementById('meta-windows').textContent = data.windows;
+    document.getElementById('meta-threshold').textContent = data.threshold;
+    document.getElementById('meta-normalized').textContent = data.normalized || '—';
+  }
+
+  // ── Batch scan ──
+  const btnScanBatch = document.getElementById('btn-scan-batch');
+  const batchError = document.getElementById('batch-error');
+  const batchResults = document.getElementById('batch-results');
+  const batchSummary = document.getElementById('batch-summary');
+
+  btnScanBatch.addEventListener('click', async () => {
+    batchError.classList.remove('show');
+    const lines = document.getElementById('batch-input').value
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    if (lines.length === 0) {
+      batchError.textContent = 'Add at least one payload, one per line.';
+      batchError.classList.add('show');
+      return;
+    }
+
+    btnScanBatch.disabled = true;
+    btnScanBatch.textContent = 'Scanning...';
+
+    try {
+      const res = await fetch(apiBase() + '/batch_score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payloads: lines })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      renderBatchResults(data);
+    } catch (e) {
+      batchError.textContent = 'Batch scan failed — ' + e.message + '. Check the API base URL and that the server is running.';
+      batchError.classList.add('show');
+    } finally {
+      btnScanBatch.disabled = false;
+      btnScanBatch.textContent = 'Scan Batch';
+    }
+  });
+
+  function renderBatchResults(data) {
+    batchSummary.classList.remove('hidden');
+    document.getElementById('sum-total').textContent = data.total;
+    document.getElementById('sum-malicious').textContent = data.malicious_count;
+    document.getElementById('sum-benign').textContent = data.benign_count;
+
+    const rows = data.results.map(r => {
+      const isMal = r.label === 'malicious' || r.label === 'attack';
+      const pct = Math.min(Math.max(r.score, 0), 1) * 100;
+      return `
+        <tr>
+          <td class="payload-cell" title="${escapeHtml(r.payload)}">${escapeHtml(r.payload)}</td>
+          <td>${r.score.toFixed(4)}</td>
+          <td>
+            <div class="mini-gauge">
+              <div class="mini-gauge-fill ${isMal ? 'malicious' : 'benign'}" style="width:${pct}%"></div>
+            </div>
+          </td>
+          <td><span class="mini-verdict ${isMal ? 'malicious' : 'benign'}">${r.label}</span></td>
+          <td>${r.latency_ms.toFixed(2)} ms</td>
+        </tr>`;
+    }).join('');
+
+    batchResults.innerHTML = `
+      <table class="results-table">
+        <tr>
+          <th>Payload</th>
+          <th>Score</th>
+          <th>Signal</th>
+          <th>Verdict</th>
+          <th>Latency</th>
+        </tr>
+        ${rows}
+      </table>`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+</html>

@@ -34,6 +34,14 @@ else:
 # ── FastAPI app ─────────────────────────────────────────────────────
 app = FastAPI(title="WAF Scoring Endpoint")
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # ── Request schema — what Member A's proxy sends ────────────────────
 class HTTPRequest(BaseModel):
     method:     str = "GET"
