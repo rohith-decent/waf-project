@@ -101,7 +101,9 @@ class TestSlidingWindowProof:
 
         # Load real benign samples — guaranteed to score low
         benign_texts = []
-        with open("dataset.jsonl") as f:
+        from pathlib import Path
+        dataset_path = Path("data/dataset.jsonl") if Path("data/dataset.jsonl").exists() else Path("dataset.jsonl")
+        with open(dataset_path, encoding="utf-8") as f:
             for line in f:
                 row = json.loads(line)
                 if row["label"] == 0:
@@ -130,7 +132,7 @@ class TestSlidingWindowProof:
 
         baseline = self._baseline_score(padded_attack, tok, model)
         scan_score, windows, blocked = sliding_score(
-            padded_attack, tok, None, threshold=0.5
+            padded_attack, tok, None, threshold=0.5, pt_model=model
         )
 
         print(f"\n{'='*50}")

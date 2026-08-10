@@ -75,6 +75,6 @@ def sliding_score(
             + chunk
             + [tokenizer.sep_token_id]
         )
-        scores.append(_score_tokens(ids_with_special, tokenizer, session))
+        scores.append(_score_tokens(ids_with_special, tokenizer, session, pt_model=pt_model))
     max_score = max(scores)
     return max_score, len(scores), max_score >= threshold
